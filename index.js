@@ -1,5 +1,4 @@
 var http = require('http');
-var url = require('url');
 
 var kankun = function(){
     this.name = 'kankun-plug';
