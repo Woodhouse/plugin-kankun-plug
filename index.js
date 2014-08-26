@@ -4,22 +4,50 @@ var kankun = function(){
     this.name = 'kankun-plug';
     this.displayname = 'Kankun Plug';
     this.description = 'Control your Kankun plugs';
+    this.canAddNewPrefs = true;
+    this.newPrefsTemplate = [
+        {
+            name: 'IP',
+            type: 'text',
+            value: ''
+        },{
+            name: 'group',
+            type: 'text',
+            value: ''
+        }
+    ];
 }
 
 kankun.prototype.init = function(){
     var self = this;
     this.listen('kankun on (.+?)', function(from, interface, params){
-        self.turnOn('192.168.0.10', params[0], interface, from);
+        self.checkGroups(params, function(ip){
+            self.turnOn(ip, params[0], interface, from)
+        });
     });
 
     this.listen('kankun off (.+?)', function(from, interface, params){
-        self.turnOff('192.168.0.10', params[0], interface, from);
+        self.checkGroups(params, function(ip){
+            self.turnOff(ip, params[0], interface, from)
+        });
     });
 
     this.listen('kankun status (.+?)', function(from, interface, params){
-        self.checkStatus('192.168.0.10', params[0], interface, from);
+        self.checkGroups(params, function(ip){
+            self.checkStatus(ip, params[0], interface, from)
+        });
     });
 }
+
+kankun.prototype.checkGroups = function(params, callback) {
+    this.getPrefs().done(function(prefs){
+        for (var key in prefs) {
+            if (prefs[key] === params[0]) {
+                callback(prefs[key.replace('group', 'IP')]);
+            }
+        }
+    })
+};
 
 kankun.prototype.turnOn = function(ip, name, interface, from){
     var self = this;
@@ -71,7 +99,6 @@ kankun.prototype.checkStatus = function(ip, name, interface, from){
         });
 
         res.on('end', function(){
-            console.log(data)
             if (data.trim() === 'OFF') {
                 self.sendMessage(name + ' is off', interface, from);
             } else if (data.trim() === 'ON') {
