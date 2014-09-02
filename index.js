@@ -4,89 +4,89 @@ var kankun = function(){
     this.name = 'kankun-plug';
     this.displayname = 'Kankun Plug';
     this.description = 'Control your Kankun plugs';
-    this.canAddNewPrefs = true;
-    this.newPrefsTemplate = [
-        {
-            name: 'IP',
-            type: 'text',
-            value: ''
-        },{
-            name: 'group',
-            type: 'text',
-            value: ''
-        }
-    ];
 }
 
 kankun.prototype.init = function(){
     var self = this;
+    var dgram = require('dgram');
+    var server = dgram.createSocket('udp4');
+    this.plugs = [];
+
+    server.bind(9600);
+
+    server.on('message', function (message) {
+        if (message.toString().match('"source":"kankun-plug"')) {
+            var obj = JSON.parse(message.toString());
+
+            self.plugs[obj.uuid] = {name: obj.name, group: obj.group, ip: obj.ip};
+        }
+    });
+
     this.listen('kankun on (.+?)', function(from, interface, params){
-        self.checkGroups(params, function(ip){
-            self.turnOn(ip, params[0], interface, from)
+        self.checkGroups(params, function(obj){
+            self.turnOn(obj, interface, from)
         });
     });
 
     this.listen('kankun off (.+?)', function(from, interface, params){
-        self.checkGroups(params, function(ip){
-            self.turnOff(ip, params[0], interface, from)
+        self.checkGroups(params, function(obj){
+            self.turnOff(obj, interface, from)
         });
     });
 
     this.listen('kankun status (.+?)', function(from, interface, params){
-        self.checkGroups(params, function(ip){
-            self.checkStatus(ip, params[0], interface, from)
+        self.checkGroups(params, function(obj){
+            self.checkStatus(obj, interface, from)
         });
     });
 }
 
 kankun.prototype.checkGroups = function(params, callback) {
-    this.getPrefs().done(function(prefs){
-        for (var key in prefs) {
-            if (prefs[key] === params[0]) {
-                callback(prefs[key.replace('group', 'IP')]);
-            }
+    for (var key in this.plugs) {
+        if (this.plugs[key].name === params[0] || this.plugs[key].group === params[0]) {
+            callback(this.plugs[key]);
         }
-    })
-};
+    }
+}
 
-kankun.prototype.turnOn = function(ip, name, interface, from){
+kankun.prototype.turnOn = function(obj, interface, from){
     var self = this;
     var options = {
-        hostname: ip,
+        hostname: obj.ip,
         path: '/cgi-bin/relay.cgi?on',
         headers: {
             'user-agent': 'Woodhouse Bot - https://github.com/Woodhouse-bot/woodhouse'
         }
     };
     var req = http.get(options, function(res) {
-        self.sendMessage(name + ' has been turned on', interface, from);
+        self.sendMessage(obj.name + ' has been turned on', interface, from);
     }).on('error', function(e) {
       console.log('problem with request: ' + e.message);
     });
 
 }
 
-kankun.prototype.turnOff = function(ip, name, interface, from){
+kankun.prototype.turnOff = function(obj, interface, from){
     var self = this;
     var options = {
-        hostname: ip,
+        hostname: obj.ip,
         path: '/cgi-bin/relay.cgi?off',
         headers: {
             'user-agent': 'Woodhouse Bot - https://github.com/Woodhouse-bot/woodhouse'
         }
     };
     var req = http.get(options, function(res) {
-        self.sendMessage(name + ' has been turned off', interface, from);
+        self.sendMessage(obj.name + ' has been turned off', interface, from);
     }).on('error', function(e) {
       console.log('problem with request: ' + e.message);
     });
 
 }
 
-kankun.prototype.checkStatus = function(ip, name, interface, from){
+kankun.prototype.checkStatus = function(obj, interface, from){
     var self = this;
     var options = {
-        hostname: ip,
+        hostname: obj.ip,
         path: '/cgi-bin/relay.cgi?state',
         headers: {
             'user-agent': 'Woodhouse Bot - https://github.com/Woodhouse-bot/woodhouse'
@@ -100,9 +100,9 @@ kankun.prototype.checkStatus = function(ip, name, interface, from){
 
         res.on('end', function(){
             if (data.trim() === 'OFF') {
-                self.sendMessage(name + ' is off', interface, from);
+                self.sendMessage(obj.name + ' is off', interface, from);
             } else if (data.trim() === 'ON') {
-                self.sendMessage(name + ' is on', interface, from);
+                self.sendMessage(obj.name + ' is on', interface, from);
             }
         })
     });
