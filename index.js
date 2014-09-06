@@ -22,19 +22,19 @@ kankun.prototype.init = function(){
         }
     });
 
-    this.listen('kankun on (.+?)', function(from, interface, params){
+    this.listen('kankun on (.+?)', 'standard', function(from, interface, params){
         self.checkGroups(params, function(obj){
             self.turnOn(obj, interface, from)
         });
     });
 
-    this.listen('kankun off (.+?)', function(from, interface, params){
+    this.listen('kankun off (.+?)', 'standard', function(from, interface, params){
         self.checkGroups(params, function(obj){
             self.turnOff(obj, interface, from)
         });
     });
 
-    this.listen('kankun status (.+?)', function(from, interface, params){
+    this.listen('kankun status (.+?)', 'standard', function(from, interface, params){
         self.checkGroups(params, function(obj){
             self.checkStatus(obj, interface, from)
         });
