@@ -22,19 +22,19 @@ kankun.prototype.init = function(){
         }
     });
 
-    this.listen('kankun on (.+?)', 'standard', function(from, interface, params){
+    this.listen('(kankun|small k) on (.+?)', 'standard', function(from, interface, params){
         self.checkGroups(params, function(obj){
             self.turnOn(obj, interface, from)
         });
     });
 
-    this.listen('kankun off (.+?)', 'standard', function(from, interface, params){
+    this.listen('(kankun|small k) off (.+?)', 'standard', function(from, interface, params){
         self.checkGroups(params, function(obj){
             self.turnOff(obj, interface, from)
         });
     });
 
-    this.listen('kankun status (.+?)', 'standard', function(from, interface, params){
+    this.listen('(kankun|small k) status (.+?)', 'standard', function(from, interface, params){
         self.checkGroups(params, function(obj){
             self.checkStatus(obj, interface, from)
         });
@@ -43,7 +43,7 @@ kankun.prototype.init = function(){
 
 kankun.prototype.checkGroups = function(params, callback) {
     for (var key in this.plugs) {
-        if (this.plugs[key].name === params[0] || this.plugs[key].group === params[0]) {
+        if (this.plugs[key].name === params[1] || this.plugs[key].group === params[1]) {
             callback(this.plugs[key]);
         }
     }
