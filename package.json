@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/Woodhouse-bot/woodhouse-plugin-kankun-plug/issues"
   },
-  "homepage": "https://github.com/Woodhouse-bot/woodhouse-plugin-kankun-plug"
+  "homepage": "https://github.com/Woodhouse-bot/woodhouse-plugin-kankun-plug",
+  "dependencies": {
+    "moment": "^2.8.3"
+  }
 }

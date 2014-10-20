@@ -1,4 +1,5 @@
 var http = require('http');
+var moment = require('moment');
 
 var kankun = function(){
     this.name = 'kankun-plug';
@@ -23,27 +24,33 @@ kankun.prototype.init = function(){
     });
 
     this.listen('(kankun|small k) on (.+?)', 'standard', function(from, interface, params){
-        self.checkGroups(params, function(obj){
-            self.turnOn(obj, interface, from)
+        self.checkGroups(params[1], function(obj){
+            self.turnOn(obj, interface, from);
         });
     });
 
     this.listen('(kankun|small k) off (.+?)', 'standard', function(from, interface, params){
-        self.checkGroups(params, function(obj){
-            self.turnOff(obj, interface, from)
+        self.checkGroups(params[1], function(obj){
+            self.turnOff(obj, interface, from);
         });
     });
 
     this.listen('(kankun|small k) status (.+?)', 'standard', function(from, interface, params){
-        self.checkGroups(params, function(obj){
-            self.checkStatus(obj, interface, from)
+        self.checkGroups(params[1], function(obj){
+            self.checkStatus(obj, interface, from);
         });
     });
+
+    this.listen('(kankun|small k) timer (.+?) (seconds|minutes|hours|days) (off|on) (.+?)', 'standard',
+        function(from, interface, params){
+            self.setTimer(from, interface, params);
+        }
+    );
 }
 
-kankun.prototype.checkGroups = function(params, callback) {
+kankun.prototype.checkGroups = function(name, callback) {
     for (var key in this.plugs) {
-        if (this.plugs[key].name === params[1] || this.plugs[key].group === params[1]) {
+        if (this.plugs[key].name === name || this.plugs[key].group === name) {
             callback(this.plugs[key]);
         }
     }
@@ -112,6 +119,23 @@ kankun.prototype.checkStatus = function(obj, interface, from){
     });
 
     req.end();
+}
+
+kankun.prototype.setTimer = function(from, interface, params) {
+    var self = this;
+    var crontime = moment().add(params[1], params[2]).toDate();
+
+    var id = self.api.addCronJob(crontime, function(){
+        self.checkGroups(params[4], function(obj){
+            if (params[3] === 'on') {
+                self.turnOn(obj, interface, from);
+            } else {
+                self.turnOff(obj, interface, from);
+            }
+        });
+    });
+
+    self.sendMessage('Timer added with ID ' + id, interface, from);
 }
 
 module.exports = kankun;
