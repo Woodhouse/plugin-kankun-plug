@@ -46,6 +46,12 @@ kankun.prototype.init = function(){
             self.setTimer(from, interface, params);
         }
     );
+
+    this.listen('(kankun|small k) cancel timer (.+?)', 'standard',
+        function(from, interface, params){
+            self.cancelTimer(from, interface, params);
+        }
+    );
 }
 
 kankun.prototype.checkGroups = function(name, callback) {
@@ -136,6 +142,11 @@ kankun.prototype.setTimer = function(from, interface, params) {
     });
 
     self.sendMessage('Timer added with ID ' + id, interface, from);
+}
+
+kankun.prototype.cancelTimer = function(from, interface, params) {
+    this.api.stopCronJob(params[1]);
+    this.sendMessage('Timer with ID ' + params[1] + ' cancelled', interface, from);
 }
 
 module.exports = kankun;
