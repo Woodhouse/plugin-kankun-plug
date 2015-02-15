@@ -41,7 +41,7 @@ kankun.prototype.init = function(){
         });
     });
 
-    this.listen('(kankun|small k) timer (.+?) (seconds|minutes|hours|days) (off|on) (.+?)', 'standard',
+    this.listen('(kankun|small k) timer (.+?) (second|minute|hour|day)[s]* (off|on) (.+?)', 'standard',
         function(from, interface, params){
             self.setTimer(from, interface, params);
         }
