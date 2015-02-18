@@ -23,31 +23,31 @@ kankun.prototype.init = function(){
         }
     });
 
-    this.listen('(kankun|small k) on (.+?)', 'standard', function(from, interface, params){
+    this.listen('(kankun|small k) on (:<group or item>.+?)', 'standard', function(from, interface, params){
         self.checkGroups(params[1], function(obj){
             self.turnOn(obj, interface, from);
         });
     });
 
-    this.listen('(kankun|small k) off (.+?)', 'standard', function(from, interface, params){
+    this.listen('(kankun|small k) off (:<group or item>.+?)', 'standard', function(from, interface, params){
         self.checkGroups(params[1], function(obj){
             self.turnOff(obj, interface, from);
         });
     });
 
-    this.listen('(kankun|small k) status (.+?)', 'standard', function(from, interface, params){
+    this.listen('(kankun|small k) status (:<group or item>.+?)', 'standard', function(from, interface, params){
         self.checkGroups(params[1], function(obj){
             self.checkStatus(obj, interface, from);
         });
     });
 
-    this.listen('(kankun|small k) timer (.+?) (second|minute|hour|day)[s]* (off|on) (.+?)', 'standard',
+    this.listen('(kankun|small k) timer (:<unit>.+?) (second|minute|hour|day)[s]* (off|on) (:<group or item>.+?)', 'standard',
         function(from, interface, params){
             self.setTimer(from, interface, params);
         }
     );
 
-    this.listen('(kankun|small k) cancel timer (.+?)', 'standard',
+    this.listen('(kankun|small k) cancel timer (:<timer id>.+?)', 'standard',
         function(from, interface, params){
             self.cancelTimer(from, interface, params);
         }
