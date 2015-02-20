@@ -41,7 +41,7 @@ kankun.prototype.init = function(){
         });
     });
 
-    this.listen('(kankun|small k) timer (:<unit>.+?) (second|minute|hour|day)[s]* (off|on) (:<group or item>.+?)', 'standard',
+    this.listen('(kankun|small k) timer (:<unit>.+?) (:<seconds, minutes, hours or days>(second|minute|hour|day)[s]*) (off|on) (:<group or item>.+?)', 'standard',
         function(from, interface, params){
             self.setTimer(from, interface, params);
         }
