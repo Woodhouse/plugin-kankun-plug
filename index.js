@@ -11,7 +11,7 @@ kankun.prototype.init = function(){
     var self = this;
     var dgram = require('dgram');
     var server = dgram.createSocket('udp4');
-    this.plugs = [];
+    this.plugs = {};
 
     server.bind(9600);
 
@@ -50,6 +50,38 @@ kankun.prototype.init = function(){
     this.listen('(kankun|small k) cancel timer (:<timer id>.+?)', 'standard',
         function(from, interface, params){
             self.cancelTimer(from, interface, params);
+        }
+    );
+
+    this.listen('(kankun|small k) list', 'standard',
+        function(from, interface, params){
+            var groups = {},
+                names = [],
+                message = '';
+
+            for (var key in self.plugs) {
+                names.push(self.plugs[key].name);
+                groups[self.plugs[key].group] = true;
+            }
+
+            if (names.length > 0) {
+                names = '    - ' + names.join('\n    - ');
+                message += 'Plug names:\n' + names + '\n';
+            }
+
+            if (Object.keys(groups).length > 0) {
+                groups = Object.keys(groups);
+                groups = '    - ' + groups.join('\n    - ');
+                message += 'Group names:\n' + groups;
+            }
+
+            message = message.trim()
+
+            if (message.length === 0) {
+                message = 'No plugs detected yet'
+            }
+
+            self.sendMessage(message, interface, from);
         }
     );
 }
