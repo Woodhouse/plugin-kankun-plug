@@ -164,8 +164,8 @@ kankun.prototype.setTimer = function(from, interface, params) {
     var crontime = moment().add(params[1], params[2]).toDate();
 
     var id = self.api.addCronJob(crontime, function(){
-        self.checkGroups(params[4], function(obj){
-            if (params[3] === 'on') {
+        self.checkGroups(params[5], function(obj){
+            if (params[4] === 'on') {
                 self.turnOn(obj, interface, from);
             } else {
                 self.turnOff(obj, interface, from);
