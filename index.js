@@ -60,7 +60,7 @@ kankun.prototype.init = function(){
                 message = '';
 
             for (var key in self.plugs) {
-                names.push(self.plugs[key].name);
+                names.push(self.plugs[key].name + ' (IP: ' + self.plugs[key].ip + ')');
                 groups[self.plugs[key].group] = true;
             }
 
