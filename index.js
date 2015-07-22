@@ -84,6 +84,16 @@ kankun.prototype.init = function(){
             self.sendMessage(message, interface, from);
         }
     );
+
+    this.registerCronHandler('timer', function(params){
+        self.checkGroups(params.plug, function(obj){
+            if (params.status === 'on') {
+                self.turnOn(obj, params.interface, params.from);
+            } else {
+                self.turnOff(obj, params.interface, params.from);
+            }
+        });
+    });
 }
 
 kankun.prototype.checkGroups = function(name, callback) {
@@ -163,21 +173,18 @@ kankun.prototype.setTimer = function(from, interface, params) {
     var self = this;
     var crontime = moment().add(params[1], params[2]).toDate();
 
-    var id = self.api.addCronJob(crontime, function(){
-        self.checkGroups(params[5], function(obj){
-            if (params[4] === 'on') {
-                self.turnOn(obj, interface, from);
-            } else {
-                self.turnOff(obj, interface, from);
-            }
-        });
+    var id = this.addCronJob(crontime, 'timer', {
+        plug: params[5],
+        status: params[4],
+        interface: interface,
+        from: from
     });
 
-    self.sendMessage('Timer added with ID ' + id, interface, from);
+    this.sendMessage('Timer added with ID ' + id, interface, from);
 }
 
 kankun.prototype.cancelTimer = function(from, interface, params) {
-    this.api.stopCronJob(params[1]);
+    this.removeCronJob(params[1]);
     this.sendMessage('Timer with ID ' + params[1] + ' cancelled', interface, from);
 }
 
