@@ -19,7 +19,7 @@ kankun.prototype.init = function(){
         if (message.toString().match('"source":"kankun-plug"')) {
             var obj = JSON.parse(message.toString());
 
-            self.plugs[obj.uuid] = {name: obj.name, group: obj.group, ip: obj.ip};
+            self.plugs[obj.uuid] = {name: obj.name.toLowerCase(), group: obj.group.toLowerCase(), ip: obj.ip};
         }
     });
 
@@ -98,7 +98,7 @@ kankun.prototype.init = function(){
 
 kankun.prototype.checkGroups = function(name, callback) {
     for (var key in this.plugs) {
-        if (this.plugs[key].name === name || this.plugs[key].group === name) {
+        if (this.plugs[key].name === name.toLowerCase() || this.plugs[key].group === name.toLowerCase()) {
             callback(this.plugs[key]);
         }
     }
