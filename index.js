@@ -1,5 +1,6 @@
 var http = require('http');
 var moment = require('moment');
+var dgram = require('dgram');
 
 var kankun = function(){
     this.name = 'kankun-plug';
@@ -9,13 +10,12 @@ var kankun = function(){
 
 kankun.prototype.init = function(){
     var self = this;
-    var dgram = require('dgram');
-    var server = dgram.createSocket('udp4');
+    this.server = dgram.createSocket('udp4');
     this.plugs = {};
 
-    server.bind(9600);
+    this.server.bind(9600);
 
-    server.on('message', function (message) {
+    this.server.on('message', function (message) {
         if (message.toString().match('"source":"kankun-plug"')) {
             var obj = JSON.parse(message.toString());
 
@@ -186,6 +186,10 @@ kankun.prototype.setTimer = function(from, interface, params) {
 kankun.prototype.cancelTimer = function(from, interface, params) {
     this.removeCronJob(params[1]);
     this.sendMessage('Timer with ID ' + params[1] + ' cancelled', interface, from);
+}
+
+kankun.prototype.exit = function() {
+    this.server.close();
 }
 
 module.exports = kankun;
