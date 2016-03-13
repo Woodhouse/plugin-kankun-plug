@@ -17,9 +17,26 @@ kankun.prototype.init = function(){
 
     this.server.on('message', function (message) {
         if (message.toString().match('"source":"kankun-plug"')) {
-            var obj = JSON.parse(message.toString());
+            var obj = JSON.parse(message.toString()),
+                tags = [];
 
-            self.plugs[obj.uuid] = {name: obj.name.toLowerCase(), group: obj.group.toLowerCase(), ip: obj.ip};
+            if (obj.uuid) {
+                if (obj.group) {
+                    tags = obj.group.split(',')
+                } else {
+                    tags = obj.tags.split(',');
+                }
+
+                if (tags instanceof Array === false) {
+                    tags = [tags];
+                }
+
+                tags = tags.map(function(value) {
+                    return value.trim().toLowerCase();
+                });
+
+                self.plugs[obj.uuid] = {name: obj.name.toLowerCase(), tags: tags, ip: obj.ip};
+            }
         }
     });
 
@@ -41,7 +58,7 @@ kankun.prototype.init = function(){
         });
     });
 
-    this.listen('(kankun|small k) timer (:<unit>.+?) (:<seconds, minutes, hours or days>(second|minute|hour|day)[s]*) (off|on) (:<group or item>.+?)', 'standard',
+    this.listen('(kankun|small k) timer (:<unit>.+?) (:<seconds, minutes, hours or days>second|minute|hour|day|seconds|minutes|hours|days) (:<state>off|on) (:<group or item>.+?)', 'standard',
         function(from, interface, params){
             self.setTimer(from, interface, params);
         }
@@ -55,13 +72,15 @@ kankun.prototype.init = function(){
 
     this.listen('(kankun|small k) list', 'standard',
         function(from, interface, params){
-            var groups = {},
+            var tags = {},
                 names = [],
                 message = '';
 
             for (var key in self.plugs) {
                 names.push(self.plugs[key].name + ' (IP: ' + self.plugs[key].ip + ')');
-                groups[self.plugs[key].group] = true;
+                self.plugs[key].tags.forEach(function(value) {
+                    tags[value] = true;
+                });
             }
 
             if (names.length > 0) {
@@ -69,10 +88,10 @@ kankun.prototype.init = function(){
                 message += 'Plug names:\n' + names + '\n';
             }
 
-            if (Object.keys(groups).length > 0) {
-                groups = Object.keys(groups);
-                groups = '    - ' + groups.join('\n    - ');
-                message += 'Group names:\n' + groups;
+            if (Object.keys(tags).length > 0) {
+                tags = Object.keys(tags);
+                tags = '    - ' + tags.join('\n    - ');
+                message += 'Tags:\n' + tags;
             }
 
             message = message.trim()
@@ -98,7 +117,7 @@ kankun.prototype.init = function(){
 
 kankun.prototype.checkGroups = function(name, callback) {
     for (var key in this.plugs) {
-        if (this.plugs[key].name === name.toLowerCase() || this.plugs[key].group === name.toLowerCase()) {
+        if (this.plugs[key].name === name.toLowerCase() || this.plugs[key].tags.indexOf(name.toLowerCase()) > -1) {
             callback(this.plugs[key]);
         }
     }
@@ -174,8 +193,8 @@ kankun.prototype.setTimer = function(from, interface, params) {
     var crontime = moment().add(params[1], params[2]).toDate();
 
     var id = this.addCronJob(crontime, 'timer', {
-        plug: params[5],
-        status: params[4],
+        plug: params[4],
+        status: params[3],
         interface: interface,
         from: from
     });
