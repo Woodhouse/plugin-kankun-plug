@@ -17,6 +17,9 @@
   },
   "homepage": "https://github.com/Woodhouse-bot/woodhouse-plugin-kankun-plug",
   "dependencies": {
-    "moment": "^2.8.3"
+    "bluebird": "^3.4.6",
+    "moment": "^2.8.3",
+    "request": "^2.75.0",
+    "request-promise": "^4.1.1"
   }
 }
