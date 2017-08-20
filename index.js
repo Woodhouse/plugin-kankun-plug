@@ -36,26 +36,44 @@ class kankun {
             }
         });
 
-        this.listen('(kankun|small k) on (:<group or item>.+?)', 'standard', (from, interfaceName, params) => {
-            return this.checkGroups(params[1], (obj) => {
-                return this.turnOn(obj, interfaceName, from);
-            });
+        this.listen({
+            id: 'on',
+            listener: '(kankun|small k) on (:<group or item>.+?)',
+            role: 'standard',
+            command: (from, interfaceName, params) => {
+                return this.checkGroups(params[1], (obj) => {
+                    return this.turnOn(obj, interfaceName, from);
+                });
+            }
         });
 
-        this.listen('(kankun|small k) off (:<group or item>.+?)', 'standard', (from, interfaceName, params) => {
-            return this.checkGroups(params[1], (obj) => {
-                return this.turnOff(obj, interfaceName, from);
-            });
+        this.listen({
+            id: 'off',
+            listener: '(kankun|small k) off (:<group or item>.+?)',
+            role: 'standard',
+            command: (from, interfaceName, params) => {
+                return this.checkGroups(params[1], (obj) => {
+                    return this.turnOff(obj, interfaceName, from);
+                });
+            }
         });
 
-        this.listen('(kankun|small k) status (:<group or item>.+?)', 'standard', (from, interfaceName, params) => {
-            return this.checkGroups(params[1], (obj) => {
-                return this.checkStatus(obj, interfaceName, from);
-            });
+        this.listen({
+            id: 'status',
+            listener: '(kankun|small k) status (:<group or item>.+?)',
+            role: 'standard',
+            command: (from, interfaceName, params) => {
+                return this.checkGroups(params[1], (obj) => {
+                    return this.checkStatus(obj, interfaceName, from);
+                });
+            }
         });
 
-        this.listen('(kankun|small k) timer (:<unit>.+?) (:<seconds, minutes, hours or days>second|minute|hour|day|seconds|minutes|hours|days) (:<state>off|on) (:<group or item>.+?)', 'standard',
-            (from, interfaceName, params) => {
+        this.listen({
+            id: 'timer',
+            listener: '(kankun|small k) timer (:<unit>.+?) (:<seconds, minutes, hours or days>second|minute|hour|day|seconds|minutes|hours|days) (:<state>off|on) (:<group or item>.+?)',
+            role: 'standard',
+            command: (from, interfaceName, params) => {
                 const crontime = moment().add(params[1], params[2]).toDate();
 
                 return this.addCronJob(crontime, 'timer', {
@@ -67,18 +85,24 @@ class kankun {
                     return `Timer added with ID ${id}`;
                 });
             }
-        );
+        });
 
-        this.listen('(kankun|small k) cancel timer (:<timer id>.+?)', 'standard',
-            (from, interfaceName, params) => {
+        this.listen({
+            id: 'cancel-timer',
+            listener: '(kankun|small k) cancel timer (:<timer id>.+?)',
+            role: 'standard',
+            command: (from, interfaceName, params) => {
                 return this.removeCronJob(params[1]).then(() => {
                     return `Timer with ID ${params[1]} cancelled`;
                 });
             }
-        );
+        });
 
-        this.listen('(kankun|small k) list', 'standard',
-            (from, interfaceName, params) => {
+        this.listen({
+            id: 'list',
+            listener: '(kankun|small k) list',
+            role: 'standard',
+            command: (from, interfaceName, params) => {
                 let tags = {};
                 let names = [];
                 let message = '';
@@ -109,7 +133,7 @@ class kankun {
 
                 return message;
             }
-        );
+        });
 
         this.registerCronHandler('timer', (params) => {
             this.checkGroups(params.plug, (obj) => {
@@ -174,7 +198,7 @@ class kankun {
             headers: {
                 'User-Agent': 'Woodhouse Bot - https://github.com/Woodhouse/core'
             }
-        }).then((res) => {
+        }).then((data) => {
             if (data.trim() === 'OFF') {
                 return `${obj.name} is off`;
             } else if (data.trim() === 'ON') {
